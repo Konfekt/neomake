@@ -797,19 +797,24 @@ Returns a string for a 'statusline'.
 
 The optional argument is a dictionary of options (see below).
 
-The following example creates a custom 'statusline' function, where `a:active`
+The following example creates a custom 'statusline' function, where `active`
 may reflect if the window is the current one (implementation not provided): >
-    let neomake_status_str = neomake#statusline#get(bufnr, {
-          \ 'format_running': '… ({{running_job_names}})',
-          \ 'format_loclist_ok':
-          \   (a:active ? '%#NeomakeStatusGood#' : '%*').'✓',
-          \ 'format_quickfix_ok': '',
-          \ 'format_quickfix_issues': (a:active ? '%s' : ''),
-          \ 'format_status': '%%(%s'
-          \   .(a:active ? '%%#StatColorHi2#' : '%%*')
-          \   .'%%)',
-          \ })
+        
+    function! NeomakeStatline(buf, win)
+        let active = win_getid() ==# a:win
+        return neomake#statusline#get(a:buf, {
+                    \ 'format_loclist_unknown': '',
+                    \ 'format_running': '… ({{running_job_names}})',
+                    \ 'format_loclist_ok':
+                    \   (active ? '%#NeomakeStatusGood#' : '%*').'✓',
+                    \ 'format_quickfix_ok': '',
+                    \ 'format_quickfix_issues': (active ? '%s' : ''),
+                    \ })
+    endfunction
+    set statusline+=%.55(%{%NeomakeStatline(g:actual_curbuf,g:actual_curwin)%}%)
 <
+See also |g:acutal_curbuf| and https://github.com/neomake/neomake/issues/1938
+
 A simpler example: >
     let neomake_status_str = neomake#statusline#get(bufnr, {
           \ 'format_running': '… ({{running_job_names}})',
